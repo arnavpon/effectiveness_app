@@ -1,5 +1,8 @@
 import 'dart:developer';
 
+import 'package:effectivess_app/models/activity.dart';
+import 'package:effectivess_app/models/time_segment.dart';
+import 'package:effectivess_app/views/activity_form.dart';
 import 'package:flutter/material.dart';
 
 class DayViewScreen extends StatefulWidget {
@@ -18,50 +21,29 @@ class DayViewScreen extends StatefulWidget {
 class _DayViewScreenState extends State<DayViewScreen> {
   DateTime? _startTime;
 
-  final String KEY_HOUR_STRING = "key_hour_string";
-  final String KEY_HOUR_MODIFIER = "key_hour_modifier";
-
-  Map<String, String> formatHour(int hour) {
-    /// Creates readable string with modifier (AM/PM) for hour value
-    String formattedString = "$hour";
-    String modifier = "AM";
-    if (hour == 0) {
-      formattedString = "12";
-    } else if (hour >= 12) {
-      if (hour > 12) {
-        formattedString = "${hour - 12}";
-      }
-      modifier = "PM";
-    }
-    return {KEY_HOUR_STRING: formattedString, KEY_HOUR_MODIFIER: modifier};
-  }
-
-  String formatMinute(int minute) {
-    /// Adds trailing zero to minutes
-    return (minute < 10) ? "0$minute" : "$minute";
-  }
-
   @override
   initState() {
     super.initState();
     _segments = List.generate((24 * 6), (index) {
       var tsStart = widget.day.add(Duration(minutes: index * 10));
       var tsEnd = tsStart.add(const Duration(minutes: 10));
-      var startHour = formatHour(tsStart.hour);
-      var startMinute = formatMinute(tsStart.minute);
-      var endHour = formatHour(tsEnd.hour);
-      var endMinute = formatMinute(tsEnd.minute);
-
-      return "${startHour[KEY_HOUR_STRING]}:$startMinute ${startHour[KEY_HOUR_MODIFIER]} - ${endHour[KEY_HOUR_STRING]}:$endMinute ${endHour[KEY_HOUR_MODIFIER]}";
+      return TimeSegment(tsStart, tsEnd);
     });
+    _activities[_segments[3]] = Activity(title: "Test Activity"); // ***
   }
 
-  List<String> _segments = <String>[];
+  List<TimeSegment> _segments = <TimeSegment>[]; // data source for UI list view
+  final Map<TimeSegment, Activity> _activities =
+      {}; // existing activities for day, best way to index this?
 
   void _pinStartTime() {
     // toggle pin on & off, create item when toggled off
     _startTime = DateTime.now();
     log("Pinned at ${_startTime!.toIso8601String()}");
+  }
+
+  bool _activityExistsForSegment(int index) {
+    return _activities.containsKey(_segments[index]);
   }
 
   @override
@@ -74,11 +56,25 @@ class _DayViewScreenState extends State<DayViewScreen> {
           itemCount: _segments.length,
           itemBuilder: (context, index) {
             return ListTile(
-              title: Text(_segments[index]),
-              subtitle: const Text("Activity?"),
+              title: Text(_segments[index].readableFullString),
+              subtitle: (_activityExistsForSegment(index))
+                  ? Text(_activities[_segments[index]]!.title)
+                  : null,
               onTap: () {
                 // navigate to edit view (form)
-                print("tapped @ index $index");
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                          appBar: AppBar(
+                            title: Text(
+                                "${(_activityExistsForSegment(index)) ? "Edit" : "Add"} Activity"),
+                          ),
+                          body: (_activityExistsForSegment(index))
+                              ? ActivityForm.fromActivity(
+                                  timeSegment: _segments[index],
+                                  activity: _activities[_segments[index]],
+                                )
+                              : ActivityForm(timeSegment: _segments[index]),
+                        )));
               },
               selected: false,
               selectedTileColor: Colors.blue,

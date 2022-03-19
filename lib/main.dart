@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:effectivess_app/views/screen_day_view.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
