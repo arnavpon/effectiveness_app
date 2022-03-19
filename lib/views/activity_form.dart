@@ -1,3 +1,4 @@
+import 'package:effectivess_app/shared/form_input_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:effectivess_app/models/activity.dart';
 import 'package:effectivess_app/models/time_segment.dart';
@@ -84,10 +85,9 @@ class _ActivityFormState extends State<ActivityForm> {
           children: <Widget>[
             const Text("Title: "),
             TextFormField(
-              initialValue: widget.activity?.title,
-              validator: (value) =>
-                  (value == null || value.isEmpty) ? "Title is required" : null,
-            ),
+                initialValue: widget.activity?.title,
+                validator: (value) =>
+                    BaseFormInputValidator().validateInput(value)),
             const Text("Start Time: "),
             ElevatedButton(
                 onPressed: _selectStartTime,
