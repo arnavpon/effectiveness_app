@@ -37,6 +37,10 @@ class TimeSegment {
     return "$readableStartTime - $readableEndTime";
   }
 
+  Duration get duration {
+    return endTime.difference(startTime);
+  }
+
   // MARK: - Instance Methods
 
   String _formatMinute(int minute) {
