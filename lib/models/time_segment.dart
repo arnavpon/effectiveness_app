@@ -62,4 +62,9 @@ class TimeSegment {
     }
     return {KEY_HOUR_STRING: formattedString, KEY_HOUR_MODIFIER: modifier};
   }
+
+  bool overlapsWithSegment(TimeSegment segment) {
+    /// Checks if input time segment overlaps with this time segment, meaning the two segments share any amount of time
+    return false;
+  }
 }

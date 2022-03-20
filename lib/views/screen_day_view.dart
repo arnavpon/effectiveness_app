@@ -5,6 +5,7 @@ import 'package:effectivess_app/models/activity.dart';
 import 'package:effectivess_app/models/time_segment.dart';
 import 'package:effectivess_app/views/activity_form.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DayViewScreen extends StatefulWidget {
   const DayViewScreen({Key? key, required this.day}) : super(key: key);
@@ -30,6 +31,7 @@ class _DayViewScreenState extends State<DayViewScreen> {
       var tsEnd = tsStart.add(const Duration(minutes: 10));
       return TimeSegment(tsStart, tsEnd);
     });
+    // use Provider.of<MongoHandler>(context).runMongo() to pull activities for segments
     _activities[_segments[3]] = Activity(title: "Test Activity"); // ***
   }
 

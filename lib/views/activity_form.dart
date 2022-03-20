@@ -1,7 +1,11 @@
-import 'package:effectivess_app/shared/form_input_validator.dart';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+
+import 'package:effectivess_app/shared/form_input_validator.dart';
 import 'package:effectivess_app/models/activity.dart';
 import 'package:effectivess_app/models/time_segment.dart';
+import 'package:effectivess_app/models/tags.dart';
 
 class ActivityForm extends StatefulWidget {
   const ActivityForm({Key? key, required this.timeSegment})
@@ -22,6 +26,7 @@ class _ActivityFormState extends State<ActivityForm> {
   final _formKey = GlobalKey<FormState>();
   Activity _activity = Activity(title: "");
   TimeSegment _timeSegment = TimeSegment(DateTime.now(), DateTime.now());
+  List<Tag> tags = [];
 
   @override
   initState() {
@@ -87,7 +92,10 @@ class _ActivityFormState extends State<ActivityForm> {
             TextFormField(
                 initialValue: widget.activity?.title,
                 validator: (value) =>
-                    BaseFormInputValidator().validateInput(value)),
+                    BaseFormInputValidator().validateInput(value),
+                onSaved: (value) {
+                  _activity.title = value!;
+                }),
             const Text("Start Time: "),
             ElevatedButton(
                 onPressed: _selectStartTime,
@@ -97,9 +105,28 @@ class _ActivityFormState extends State<ActivityForm> {
                 onPressed: _selectEndTime,
                 child: Text(_timeSegment.readableEndTime)),
             Text("Current Status: ${_activity.getReadableStatus()}"),
+            const Text("Tags"),
+            TextFormField(
+              onSaved: (value) {
+                if (value != null && value.isNotEmpty) {
+                  var tags = value
+                      .split(" ")
+                      .map((element) => Tag(element))
+                      .toList(); // split tags on spaces
+                  _activity.tags = tags;
+                  log("saved tags!");
+                }
+              },
+            ), // separate tags by spaces, can be empty
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
+                  _formKey.currentState!.save(); // save form fields
+                  await _activity.insertDbo(context); // insert into db
+                  await _activity.fetchDbo(context); // ***
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Added activity!")),
+                  );
                   // store activity in db & navigate back
                   Navigator.of(context).pop();
                 }
